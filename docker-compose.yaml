@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - 5000:5000
+    environment: 
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql
+volumes:
+  pgdata:
