@@ -17,7 +17,7 @@ export const url = pgTable('url', {
 	originalUrl: text('original_url').notNull(),
 	shortCode: text('short_code').notNull().unique(),
 	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-	userId: uuid('user_id').notNull().references(() => user.id).notNull(),
+	userId: uuid('user_id').notNull().references(() => user.id), // Null means it was created by a guest
 	clicks: integer('clicks').notNull().default(0)
 });
 

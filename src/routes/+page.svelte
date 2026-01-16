@@ -1,4 +1,8 @@
 <script lang="ts">
+  import Login from './Login.svelte';
+
+  import LinksTable from './LinksTable.svelte';
+
   import { enhance } from "$app/forms";
   import type { ActionData, PageData, PageServerData } from "./$types";
 
