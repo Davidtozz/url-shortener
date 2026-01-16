@@ -1,21 +1,25 @@
 import { hash, verify } from '@node-rs/argon2';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
-import { fail, redirect } from '@sveltejs/kit';
+import { fail, invalid, redirect } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import * as auth from '$lib/server/auth';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async (event) => {
-	if (event.locals.user) {
-		return redirect(302, '/demo/lucia');
-	}
-	return {};
+export const load: PageServerLoad = async ({ locals }) => {
+	return {
+		session: locals.session,
+		user: locals.user
+	};
 };
 
 export const actions: Actions = {
-	login: async ({request, cookies}) => {
+	login: async ({ request, cookies, locals }) => {
+		if (locals.user) {
+			return invalid('Already logged in');
+		}
+
 		const formData = await request.formData();
 		const username = formData.get('username');
 		const password = formData.get('password');
@@ -47,13 +51,13 @@ export const actions: Actions = {
 			return fail(400, { message: 'Incorrect username or password' });
 		}
 
-		const sessionToken = crypto.randomUUID();
 		const session = await auth.createSession(existingUser.id);
-		auth.setSessionTokenCookie(cookies, sessionToken, session.expiresAt);
+		// use the session id as the cookie token so hooks can validate it
+		auth.setSessionTokenCookie(cookies, session.id, session.expiresAt);
 
 		return redirect(302, '/demo/lucia');
 	},
-	register: async ({cookies, request}) => {
+	register: async ({ cookies, request, locals }) => {
 		const formData = await request.formData();
 		const username = formData.get('username');
 		const password = formData.get('password');
@@ -77,17 +81,30 @@ export const actions: Actions = {
 		try {
 			await db.insert(table.user).values({ id: userId, username, passwordHash });
 
-			const sessionToken = crypto.randomUUID();
 			const session = await auth.createSession(userId);
-			auth.setSessionTokenCookie(cookies, sessionToken, session.expiresAt);
+			// persist the session id in the cookie so it matches DB
+			auth.setSessionTokenCookie(cookies, session.id, session.expiresAt);
 		} catch {
 			return fail(500, { message: 'An error has occurred' });
 		}
-		return redirect(302, '/demo/lucia');
+
+		return {
+			user: locals.user,
+			session: locals.session
+		};
 	},
+	logout: async ({ locals, cookies }) => {
+		if (locals.session) {
+			await auth.invalidateSession(locals.session!.id);
+			auth.deleteSessionTokenCookie(cookies);
+		}
+
+		return {
+			user: null,
+			session: null
+		}
+	}
 };
-
-
 
 function validateUsername(username: unknown): username is string {
 	return (
