@@ -15,8 +15,8 @@ export const load: PageServerLoad = async (event) => {
 };
 
 export const actions: Actions = {
-	login: async (event) => {
-		const formData = await event.request.formData();
+	login: async ({request, cookies}) => {
+		const formData = await request.formData();
 		const username = formData.get('username');
 		const password = formData.get('password');
 
@@ -47,14 +47,14 @@ export const actions: Actions = {
 			return fail(400, { message: 'Incorrect username or password' });
 		}
 
-		const sessionToken = auth.generateSessionToken();
-		const session = await auth.createSession(sessionToken, existingUser.id);
-		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+		const sessionToken = crypto.randomUUID();
+		const session = await auth.createSession(existingUser.id);
+		auth.setSessionTokenCookie(cookies, sessionToken, session.expiresAt);
 
 		return redirect(302, '/demo/lucia');
 	},
-	register: async (event) => {
-		const formData = await event.request.formData();
+	register: async ({cookies, request}) => {
+		const formData = await request.formData();
 		const username = formData.get('username');
 		const password = formData.get('password');
 
@@ -65,7 +65,7 @@ export const actions: Actions = {
 			return fail(400, { message: 'Invalid password' });
 		}
 
-		const userId = generateUserId();
+		const userId = crypto.randomUUID();
 		const passwordHash = await hash(password, {
 			// recommended minimum parameters
 			memoryCost: 19456,
@@ -77,9 +77,9 @@ export const actions: Actions = {
 		try {
 			await db.insert(table.user).values({ id: userId, username, passwordHash });
 
-			const sessionToken = auth.generateSessionToken();
-			const session = await auth.createSession(sessionToken, userId);
-			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+			const sessionToken = crypto.randomUUID();
+			const session = await auth.createSession(userId);
+			auth.setSessionTokenCookie(cookies, sessionToken, session.expiresAt);
 		} catch {
 			return fail(500, { message: 'An error has occurred' });
 		}
@@ -87,12 +87,7 @@ export const actions: Actions = {
 	},
 };
 
-function generateUserId() {
-	// ID with 120 bits of entropy, or about the same as UUID v4.
-	const bytes = crypto.getRandomValues(new Uint8Array(15));
-	const id = encodeBase32LowerCase(bytes);
-	return id;
-}
+
 
 function validateUsername(username: unknown): username is string {
 	return (
