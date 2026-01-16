@@ -1,6 +1,6 @@
 <script lang="ts">
-
-  import type { PageProps } from './$types'
+  import { enhance } from "$app/forms";
+  import type { ActionData, PageData, PageServerData } from "./$types";
 
   let originalUrl = $state("");
   let shortUrl = $state("");
@@ -8,8 +8,8 @@
   let error = $state("");
   let success = $state(false);
 
-  let {data} = $props();
-
+  let { form, data }: { form?: any; data: any } = $props();
+  let isLoggedIn = $derived(!!data?.user);
 
   async function shortenUrl() {
     error = "";
@@ -19,21 +19,19 @@
     try {
       const response = await fetch("/api/shorten", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ originalUrl }),
       });
 
-      const data = await response.json();
+      const resp = await response.json();
 
       if (!response.ok) {
-        error = data.error || "Failed to shorten URL";
+        error = resp.error || "Failed to shorten URL";
         loading = false;
         return;
       }
 
-      shortUrl = data.shortUrl;
+      shortUrl = resp.shortUrl;
       success = true;
       originalUrl = "";
     } catch (err) {
@@ -50,20 +48,15 @@
   }
 
   function handleKeyDown(e: KeyboardEvent) {
-    if (e.key === "Enter") {
-      shortenUrl();
-    }
+    if (e.key === "Enter") shortenUrl();
   }
 </script>
 
-<div
-  class="min-h-screen bg-[#0b101b] flex items-center justify-center p-4"
->
+<div class="min-h-screen bg-[#0b101b] flex items-center justify-center p-4">
   <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
     <h1 class="text-3xl font-bold text-gray-800 mb-2 text-center">
       URL Shortener
     </h1>
-    
 
     <div class="space-y-4">
       <div>
@@ -117,13 +110,60 @@
       >
         {loading ? "Shortening..." : "Shorten URL"}
       </button>
+
+      <!-- Merged auth UI from demo/lucia/login -->
+      <div class="mt-6">
+        <form method="post" action="?/login" use:enhance>
+          {#if isLoggedIn}
+            <h2 class="text-lg font-medium">
+              You are logged in as {data?.user?.username}
+            </h2>
+            <button
+              class="mt-3 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
+              formaction="?/logout"
+            >
+              Logout
+            </button>
+          {:else}
+            <h2 class="text-lg font-medium">Login / Register</h2>
+            <label class="block mt-2">
+              Username
+              <input
+                name="username"
+                class="mt-1 px-3 py-2 w-full border rounded"
+              />
+            </label>
+            <label class="block mt-2">
+              Password
+              <input
+                type="password"
+                name="password"
+                class="mt-1 px-3 py-2 w-full border rounded"
+              />
+            </label>
+            <div class="flex gap-2 mt-3">
+              <button
+                type="submit"
+                disabled={isLoggedIn}
+                class="bg-blue-600 text-white px-3 py-1 rounded">Login</button
+              >
+              <button
+                formaction="?/register"
+                class="bg-blue-600 text-white px-3 py-1 rounded"
+                >Register</button
+              >
+            </div>
+          {/if}
+        </form>
+        <p style="color: red">{form?.message ?? ""}</p>
+      </div>
     </div>
 
     {#if data.links.length > 0}
       <h2 class="text-2xl font-bold text-gray-800 mt-8 mb-4 text-center">
         Recently Shortened URLs
       </h2>
-  
+
       <table>
         <thead>
           <tr>
@@ -132,27 +172,24 @@
           </tr>
         </thead>
         <tbody>
-
-        {#each data.links as link}
-          <tr>
-            <td class="pr-4 py-2 border-b">
-              <code class="bg-gray-100 px-2 py-1 rounded break-all"
-                >{link.originalUrl}</code
-              >
-            </td>
-            <td class="py-2 border-b">
-              <a
-                href={link.shortCode}
-                target="_blank"
-                class="text-blue-600 hover:underline"
-                >{link.shortCode}</a
-              >
-            </td>
-          </tr>
-        {/each}
-          </tbody>
-
-      </table>  
+          {#each data.links as link}
+            <tr>
+              <td class="pr-4 py-2 border-b">
+                <code class="bg-gray-100 px-2 py-1 rounded break-all"
+                  >{link.originalUrl}</code
+                >
+              </td>
+              <td class="py-2 border-b">
+                <a
+                  href={link.shortCode}
+                  target="_blank"
+                  class="text-blue-600 hover:underline">{link.shortCode}</a
+                >
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
     {/if}
   </div>
 </div>
