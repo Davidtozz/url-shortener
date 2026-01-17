@@ -209,7 +209,7 @@
     
     <a href="https://github.com/Davidtozz" target="_blank">
       <section class="flex bg-white rounded-lg shadow-md p-4 mt-6 items-center gap-3">
-        <Github size=/>
+        <Github />
         <p>
           Davidtozz
         </p>
