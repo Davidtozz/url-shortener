@@ -12,7 +12,13 @@
   let error = $state("");
   let success = $state(false);
 
-  let { form, data }: { form?: any; data: any } = $props();
+  let URLs = $state<Array<URL>>([]);
+
+  interface Props {
+    form: ActionData;
+    data: PageServerData;
+  }
+  let { form, data }: Props = $props();
   let isLoggedIn = $derived(!!data?.user);
 
   async function shortenUrl() {
@@ -34,6 +40,8 @@
         loading = false;
         return;
       }
+
+      URLs = [resp.link, ...URLs];
 
       shortUrl = resp.shortUrl;
       success = true;

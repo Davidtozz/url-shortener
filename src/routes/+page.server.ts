@@ -1,17 +1,31 @@
 import { hash, verify } from '@node-rs/argon2';
 import { fail, invalid, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { getUserUrls } from '$lib/server/db/snippets';
 import * as table from '$lib/server/db/schema';
 import * as auth from '$lib/server/auth';
 import { eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
+
+    if(!locals.user) {
+        return {
+            user: null,
+            session: null,
+            links: []
+        };
+    }
+
+    const userLinks = await db
+        .select()
+        .from(table.url)
+        .where(eq(table.url.userId, locals.user.id))
+        .orderBy(table.url.createdAt);
+
     return {
         user: locals.user,
         session: locals.session,
-        links: locals.user ? await getUserUrls(locals.user.id) : []
+        links: userLinks
     };
 };
 

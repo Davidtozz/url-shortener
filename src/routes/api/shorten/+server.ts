@@ -30,16 +30,29 @@ export const POST: RequestHandler = async ({ request }) => {
 
         // Generate a short code
         const shortCode = generateShortCode();
-        const id = Math.random().toString(36).substring(2, 15);
-
-        // Create the shortened URL record
-        const result = await db.insert(url).values({
-            id,
-            originalUrl,
-            shortCode,
-            createdAt: new Date()
-        }).returning();
-
+        const id = crypto.randomUUID(); 
+        
+        let result; 
+        
+        if(locals.user) {
+            //@ts-ignore
+            result = await db.insert(url).values({
+                id,
+                originalUrl,
+                userId: locals.user.id,
+                shortCode,
+                createdAt: new Date()
+            }).returning();
+        } else {
+            //@ts-ignore
+            result = await db.insert(url).values({
+                id,
+                originalUrl,
+                userId: null,
+                shortCode,
+                createdAt: new Date()
+            }).returning();
+        }
         return json({
             success: true,
             shortCode: result[0].shortCode,
