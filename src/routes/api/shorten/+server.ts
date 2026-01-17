@@ -7,7 +7,7 @@ function generateShortCode(): string {
     return Math.random().toString(36).substring(2, 10);
 }
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
     try {
         const { originalUrl } = await request.json();
 
