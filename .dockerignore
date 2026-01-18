@@ -1,0 +1,11 @@
+.DS_Store
+node_modules
+build
+dist
+.env
+.env.*
+.vscode
+npm-debug.log
+yarn-error.log
+/.git
+/.github

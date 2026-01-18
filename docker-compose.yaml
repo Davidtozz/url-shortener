@@ -1,9 +1,26 @@
 services:
+
+  app:
+    build: .
+    depends_on:
+      db: 
+        condition: service_healthy
+        restart: true
+    container_name: url-shortener-app
+    ports:
+      - 3000:3000
+    environment:
+      DATABASE_URL: postgres://postgres:mysecretpassword@db:5432/postgres
   db:
     image: postgres
-    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
     ports:
-      - 5000:5000
+      - 5432:5432
     environment: 
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: mysecretpassword
