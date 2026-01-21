@@ -19,7 +19,7 @@
 		"db:studio:test": "dotenv -e .env.test drizzle-kit studio",
 		"test:unit": "vitest",
 		"test": "pnpm test:e2e",
-		"test:e2e": "playwright test"
+		"test:e2e": "bash scripts/start-test-db.sh && playwright test"
 	},
 	"devDependencies": {
 		"@oslojs/crypto": "^1.0.1",

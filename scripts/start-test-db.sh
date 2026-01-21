@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Safe guard
 set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
@@ -27,5 +28,3 @@ until docker exec "$CONTAINER_NAME" pg_isready -U "$DB_USER" > /dev/null 2>&1; d
 done
 
 echo "Database ready for tests."
-
-docker attach "$CONTAINER_NAME"

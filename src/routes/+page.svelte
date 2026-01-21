@@ -76,6 +76,7 @@
           Enter your URL
         </label>
         <input
+        data-testid="url-input"
           id="url"
           type="url"
           placeholder="https://example.com/very/long/url"
@@ -100,7 +101,9 @@
         >
           <p class="font-semibold mb-2">Your short URL:</p>
           <div class="flex items-center gap-2">
-            <code class="flex-1 bg-green-50 px-2 py-1 rounded break-all"
+            <code 
+              data-testid="short-url"
+            class="flex-1 bg-green-50 px-2 py-1 rounded break-all"
               >{shortUrl}</code
             >
             <button
@@ -114,6 +117,7 @@
       {/if}
 
       <button
+        data-testid="shorten-button"
         onclick={shortenUrl}
         disabled={!originalUrl || loading}
         class="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 {loading

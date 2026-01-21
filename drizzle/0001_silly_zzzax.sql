@@ -1,1 +1,2 @@
 ALTER TABLE "user" DROP COLUMN "age";
+ALTER TABLE "url" ALTER COLUMN "user_id" DROP NOT NULL;
