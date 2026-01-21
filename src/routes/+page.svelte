@@ -123,7 +123,6 @@
         {loading ? "Shortening..." : "Shorten URL"}
       </button>
 
-      
       <div class="mt-6">
         <form method="post" action="?/login" use:enhance>
           {#if isLoggedIn}
@@ -141,6 +140,8 @@
             <label class="block mt-2">
               Username
               <input
+                data-testid="username-input"
+                type="text"
                 name="username"
                 class="mt-1 px-3 py-2 w-full border rounded"
               />
@@ -148,6 +149,7 @@
             <label class="block mt-2">
               Password
               <input
+                data-testid="password-input"
                 type="password"
                 name="password"
                 class="mt-1 px-3 py-2 w-full border rounded"
@@ -155,11 +157,14 @@
             </label>
             <div class="flex gap-2 mt-3">
               <button
+                data-testid="login-button"
                 type="submit"
                 disabled={isLoggedIn}
                 class="bg-blue-600 text-white px-3 py-1 rounded">Login</button
               >
               <button
+                data-testid="register-button"
+                type="submit"
                 formaction="?/register"
                 class="bg-blue-600 text-white px-3 py-1 rounded"
                 >Register</button
