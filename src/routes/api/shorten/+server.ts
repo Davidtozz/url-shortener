@@ -1,23 +1,24 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 import { db } from '$lib/server/db/index';
-import { url } from '$lib/server/db/schema';
+import * as table from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
 
 function generateShortCode(): string {
     return Math.random().toString(36).substring(2, 10);
 }
 
 export const POST: RequestHandler = async ({ request, locals }) => {
-    try {
-        const { originalUrl } = await request.json();
-
-        if (!originalUrl) {
-            return json(
+    const { originalUrl } = await request.json();
+    
+    if (!originalUrl) {
+        return json(
                 { error: 'Original URL is required' },
                 { status: 400 }
             );
         }
-
+    try {
+        
         // Validate URL
         try {
             new URL(originalUrl);
@@ -26,6 +27,20 @@ export const POST: RequestHandler = async ({ request, locals }) => {
                 { error: 'Invalid URL format' },
                 { status: 400 }
             );
+        }
+        
+        const [existing] = await db
+            .select()
+            .from(table.url)
+            .where(eq(table.url.originalUrl, originalUrl))
+            .limit(1);
+
+        if(existing) {
+            return json({
+                success: true,
+                shortCode: existing.shortCode,
+                shortUrl: `${new URL(request.url).origin}/${existing.shortCode}`
+            });
         }
 
         // Generate a short code
@@ -36,7 +51,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         
         if(locals.user) {
             //@ts-ignore
-            result = await db.insert(url).values({
+            result = await db.insert(table.url).values({
                 id,
                 originalUrl,
                 userId: locals.user.id,
@@ -45,7 +60,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
             }).returning();
         } else {
             //@ts-ignore
-            result = await db.insert(url).values({
+            result = await db.insert(table.url).values({
                 id,
                 originalUrl,
                 userId: null,
