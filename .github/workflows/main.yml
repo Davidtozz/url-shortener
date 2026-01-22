@@ -1,1 +1,102 @@
-name: main
+name: CI
+
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
+          --health-timeout=2s
+          --health-retries=10
+
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      BASE_URL: http://localhost:5173
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Wait for Postgres to be ready
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y postgresql-client curl
+          for i in {1..30}; do
+            pg_isready -h 127.0.0.1 -p 5432 -U "$PGUSER" && break
+            echo "Waiting for postgres..."
+            sleep 1
+          done
+
+      - name: Run DB migrations
+        env:
+          PGHOST: ${{ env.PGHOST }}
+          PGPORT: ${{ env.PGPORT }}
+          PGUSER: ${{ env.PGUSER }}
+          PGPASSWORD: postgres
+          PGDATABASE: ${{ env.PGDATABASE }}
+        run: pnpm db:migrate
+
+      - name: Build app
+        run: pnpm build
+
+      - name: Start preview server
+        run: |
+          nohup pnpm preview -- --port 5173 > preview.log 2>&1 &
+          echo $! > .preview.pid
+
+      - name: Wait for preview to be ready
+        run: |
+          for i in {1..30}; do
+            curl -sSf http://localhost:5173 && break
+            echo "Waiting for preview..."
+            sleep 1
+          done
+
+      - name: Run unit tests
+        run: pnpm test:unit
+
+      - name: Run Playwright E2E tests
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+        run: npx playwright test
+
+      - name: Tear down preview
+        if: always()
+        run: |
+          if [ -f .preview.pid ]; then
+            kill $(cat .preview.pid) || true
+            rm .preview.pid
+          fi
