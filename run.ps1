@@ -21,7 +21,6 @@ echo "Starting app service..."
 & docker compose up --build -d app
 
 echo "Applying database migrations..."
-# Use dotenv and pnpm as in the original script
 & dotenv -e .env pnpm db:migrate
 
 echo "Migrations complete."

@@ -10,7 +10,6 @@ $DB_NAME = 'testdb'
 echo "Checking if Docker Desktop is running..."
 & docker desktop start
 
-# If a container with the same name exists, remove it first to avoid conflict
 $existing = & docker ps -a --format '{{.Names}}' 2>$null
 if ($existing -contains $CONTAINER_NAME) {
   echo "A container named '$CONTAINER_NAME' already exists — removing it..."
@@ -25,7 +24,7 @@ echo "Starting the test container"
   -p 5432:5432 `
   $POSTGRES_IMAGE
 
-# Wait until the database is ready
+
 do {
   & docker exec $CONTAINER_NAME pg_isready -U $DB_USER > $null 2>&1
   $ready = $LASTEXITCODE -eq 0
@@ -38,7 +37,7 @@ do {
 echo "Database ready for tests."
 echo "Applying database migrations (drizzle-kit)..."
 
-# Try using npx or dotenv if available, otherwise instruct user
+
 if (Get-Command npx -ErrorAction SilentlyContinue) {
   & npx dotenv -e .env.test pnpm db:migrate
 } elseif (Get-Command dotenv -ErrorAction SilentlyContinue) {
