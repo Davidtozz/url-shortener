@@ -39,6 +39,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
             return json({
                 success: true,
                 shortCode: existing.shortCode,
+                originalUrl: existing.originalUrl,
                 shortUrl: `${new URL(request.url).origin}/${existing.shortCode}`
             });
         }
@@ -71,6 +72,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         return json({
             success: true,
             shortCode: result[0].shortCode,
+            originalUrl: result[0].originalUrl,
             shortUrl: `${new URL(request.url).origin}/${result[0].shortCode}`
         });
     } catch (error) {

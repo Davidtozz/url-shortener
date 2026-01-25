@@ -4,10 +4,10 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
+		"dev": "bash scripts/start-test-db.sh && dotenv -e .env.test pnpm db:migrate && dotenv -e .env.test vite dev",
+		"build": "dotenv -e .env vite build",
 		"build:test": "dotenv -e .env.test vite build",
-		"preview": "vite preview",
+		"preview": "dotenv -e .env vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",

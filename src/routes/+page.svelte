@@ -4,6 +4,7 @@
 
   import { enhance } from "$app/forms";
   import type { ActionData, PageData, PageServerData } from "./$types";
+  import {type URL as Shortlink} from '$lib/server/db/schema'; 
 
   let originalUrl = $state("");
   let shortUrl = $state("");
@@ -11,14 +12,14 @@
   let error = $state("");
   let success = $state(false);
 
-  let URLs = $state<Array<URL>>([]);
-
   interface Props {
     form: ActionData;
     data: PageServerData;
   }
   let { form, data }: Props = $props();
   let isLoggedIn = $derived(!!data?.user);
+  
+  let userShortlinks = $derived(data?.links ?? [] as Shortlink[]);
 
   async function shortenUrl() {
     error = "";
@@ -26,23 +27,22 @@
     loading = true;
 
     try {
-      const response = await fetch("/api/shorten", {
+      const shortlinkResponse = await fetch("/api/shorten", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ originalUrl }),
       });
 
-      const resp = await response.json();
+      const shortlink = await shortlinkResponse.json();
 
-      if (!response.ok) {
-        error = resp.error || "Failed to shorten URL";
+      if (!shortlinkResponse.ok) {
+        error = shortlink.error || "Failed to shorten URL";
         loading = false;
         return;
       }
 
-      URLs = [resp.link, ...URLs];
-
-      shortUrl = resp.shortUrl;
+      userShortlinks = [shortlink, ...userShortlinks];
+      shortUrl = shortlink.shortUrl;
       success = true;
       originalUrl = "";
     } catch (err) {
@@ -194,18 +194,18 @@
           </tr>
         </thead>
         <tbody>
-          {#each data.links as link}
+          {#each userShortlinks as shortlink}
           <tr>
             <td class="pr-4 py-2 border-b">
               <code class="bg-gray-100 px-2 py-1 rounded break-all"
-                  >{link.originalUrl}</code
+                  >{shortlink.originalUrl}</code
                 >
               </td>
               <td class="py-2 border-b">
                 <a
-                href={link.shortCode}
+                href={shortlink.shortCode}
                 target="_blank"
-                class="text-blue-600 hover:underline">{link.shortCode}</a
+                class="text-blue-600 hover:underline">{shortlink.shortCode}</a
                 >
               </td>
             </tr>
