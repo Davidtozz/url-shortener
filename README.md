@@ -45,7 +45,10 @@ SvelteKit e TailwindCSS per via della mia conoscenza pregressa con quest'ultimi 
 
 ## Prerequisiti
 
-Per eseguire il progetto in locale, assicurati di avere [`pnpm`](https://pnpm.io/installation) e [`docker`](https://docs.docker.com/desktop/) installato nel tuo sistema. Per eseguire il progetto, inoltre, è necessaria la versione 24.13.0 di NodeJS.
+* [`pnpm`](https://pnpm.io/installation) 
+* [`docker`](https://docs.docker.com/desktop/) 
+* NodeJS versione 24.13.0.
+* dotenv-cli globalmente installato (installa con `npm add -g dotenv-cli`)
 
 ### Installazione
 
