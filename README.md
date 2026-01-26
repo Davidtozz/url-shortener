@@ -41,14 +41,13 @@ DrizzleORM principalmente per la possibilità di creare file di migratione, perm
 
 SvelteKit e TailwindCSS per via della mia conoscenza pregressa con quest'ultimi e soprattutto per la loro semplicità d'uso.
 
-
-
 ## Prerequisiti
 
 * [`pnpm`](https://pnpm.io/installation) 
-* [`docker`](https://docs.docker.com/desktop/) 
-* NodeJS versione 24.13.0.
-* dotenv-cli globalmente installato (installa con `npm add -g dotenv-cli`)
+* [`Docker Desktop`](https://docs.docker.com/desktop/) 
+* [`NodeJS (v24.13.0)`](https://nodejs.org/en/download/archive/v24.13.0). 
+* `dotenv-cli` globalmente installato (installa con `npm install -g dotenv-cli`)
+* (Windows) Terminale Git bash per l'esecuzione degli script shell, ampiamente utilizzati in `package.json`
 
 ### Installazione
 
@@ -60,19 +59,20 @@ SvelteKit e TailwindCSS per via della mia conoscenza pregressa con quest'ultimi 
    ```sh
    pnpm i # oppure pnpm install
    ```
-3. Per lo svilippo, esegui:
+3. Per lo sviluppo, esegui:
    ```sh
     pnpm dev
    ```
-4. In alternativa, puoi eseguire l'applicazione tramite `docker-compose`:
+4. Per la versione production (in esecuzione su Docker), esegui lo script `run.sh`:
   ```sh
-    docker-compose up --build
+    ./run.sh # sintassi del comando valida solo se eseguita sulla cartella root del progetto
   ```
-5. Esegui le migrazioni di DrizzleORM per creare le tabelle nel database PostgreSQL:
+5. Visita `http://localhost:3000` nel tuo browser per vedere l'app in azione oppure `http://localhost:5173` se hai avviato l'app tramite `pnpm dev`.
+6. (opzionale) Ispeziona il database con `drizzle studio`:
    ```sh
-   pnpm db:migrate
+    pnpm db:studio # per la versione production
+    pnpm db:studio:test # per la versione dev
    ```
-6. Visita `http://localhost:3000` nel tuo browser per vedere l'app in azione oppure `http://localhost:5173` se hai avviato l'app tramite `pnpm dev`.
 
 <!-- LICENSE -->
 ## Licenza
