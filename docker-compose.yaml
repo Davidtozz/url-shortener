@@ -1,7 +1,11 @@
 services:
 
   app:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
     depends_on:
       db: 
         condition: service_healthy
@@ -10,11 +14,14 @@ services:
     ports:
       - 3000:3000
     environment:
-      DATABASE_URL: postgres://postgres:mysecretpassword@db:5432/postgres
+      DATABASE_URL: postgres://${POSTGRES_USER:?error}:${POSTGRES_PASSWORD:?error}@db:5432/${POSTGRES_DB:?error}
+      POSTGRES_USER: ${POSTGRES_USER:?error}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?error}
+      POSTGRES_DB: ${POSTGRES_DB:?error}
   db:
     image: postgres
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
       interval: 10s
       retries: 5
       start_period: 30s
@@ -22,9 +29,9 @@ services:
     ports:
       - 5432:5432
     environment: 
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_DB: postgres
+      POSTGRES_USER: ${POSTGRES_USER:?error}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?error}
+      POSTGRES_DB: ${POSTGRES_DB:?error}
     volumes:
       - pgdata:/var/lib/postgresql
 volumes:
