@@ -62,8 +62,8 @@ SvelteKit e TailwindCSS per via della mia conoscenza pregressa con quest'ultimi 
 3. Per lo sviluppo, esegui:
    ```sh
     pnpm dev
-   ```
-4. Per la versione production (in esecuzione su Docker), esegui lo script `run.sh`:
+   ```   
+4. Per la versione production (in esecuzione su Docker), esegui lo script `run.sh`. (Assicurati di aver rinominato `.env.example` in `.env` e aver correttamente impostato `DATABASE_URL`)
   ```sh
     ./run.sh # sintassi del comando valida solo se eseguita sulla cartella root del progetto
   ```
