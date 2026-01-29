@@ -1,11 +1,11 @@
-import { redirect, error } from '@sveltejs/kit';
+import { redirect, error, type RequestHandler, invalid, text } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db/index';
 import { url } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ params }) => {
-    const shortCode = params.shorturl;
+    const shortCode = params.shortCode;
 
     // Check for the existence of the provided URL in the DBMS
     const result = await db
