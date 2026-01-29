@@ -1,8 +1,9 @@
-import { json } from '@sveltejs/kit';
+import { invalid, json, text } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 import { db } from '$lib/server/db/index';
 import * as table from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { error } from '@sveltejs/kit';
 
 function generateShortCode(): string {
     return Math.random().toString(36).substring(2, 10);

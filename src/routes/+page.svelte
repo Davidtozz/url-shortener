@@ -8,6 +8,7 @@
 
   let originalUrl = $state("");
   let shortUrl = $state("");
+  const shortCode = $derived.by(() => shortUrl.split("/").pop() || "");
   let loading = $state(false);
   let error = $state("");
   let success = $state(false);
@@ -50,6 +51,19 @@
       console.error(err);
     } finally {
       loading = false;
+    }
+  }
+
+  async function deleteShortlink() {
+    const response = await fetch(`/api/${shortCode}`, {
+      method: "DELETE",
+    });
+
+    if(response.ok) {
+      userShortlinks = userShortlinks.filter(link => link.shortCode !== shortCode);
+      shortUrl = "";
+    } else {
+      alert("Failed to delete shortlink :(");
     }
   }
 
@@ -195,7 +209,9 @@
         </thead>
         <tbody>
           {#each userShortlinks as shortlink}
-          <tr>
+          <tr
+          data-testid={shortlink.shortCode}
+          >
             <td class="pr-4 py-2 border-b">
               <code class="bg-gray-100 px-2 py-1 rounded break-all"
                   >{shortlink.originalUrl}</code
@@ -207,6 +223,14 @@
                 target="_blank"
                 class="text-blue-600 hover:underline">{shortlink.shortCode}</a
                 >
+              </td>
+              <td>
+                <button 
+                data-testid="button-delete"
+                onclick={deleteShortlink}
+                class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
+                  Delete
+                </button>
               </td>
             </tr>
             {/each}

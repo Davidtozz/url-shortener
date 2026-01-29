@@ -14,6 +14,10 @@ DB_NAME="testdb"
 echo "Checking if Docker Desktop is running..."
 docker desktop start
 
+if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}\$"; then
+  docker stop "$CONTAINER_NAME"
+fi
+
 echo "Starting the test container"
 docker run -d --rm --name url-shortener-test-db \
   -e POSTGRES_USER=$DB_USER \
