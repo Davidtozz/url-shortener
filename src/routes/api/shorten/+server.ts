@@ -4,6 +4,7 @@ import { db } from '$lib/server/db/index';
 import * as table from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
+import * as queries from '$lib/server/db/queries';
 
 function generateShortCode(): string {
     return Math.random().toString(36).substring(2, 10);
@@ -30,11 +31,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
             );
         }
         
-        const [existing] = await db
-            .select()
-            .from(table.url)
-            .where(eq(table.url.originalUrl, originalUrl))
-            .limit(1);
+        const existing = await queries.checkIfOriginalUrlExists(originalUrl);
 
         if(existing) {
             return json({
@@ -46,35 +43,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         }
 
         // Generate a short code
-        const shortCode = generateShortCode();
-        const id = crypto.randomUUID(); 
-        
-        let result; 
-        
-        if(locals.user) {
-            //@ts-ignore
-            result = await db.insert(table.url).values({
-                id,
-                originalUrl,
-                userId: locals.user.id,
-                shortCode,
-                createdAt: new Date()
-            }).returning();
-        } else {
-            //@ts-ignore
-            result = await db.insert(table.url).values({
-                id,
-                originalUrl,
-                userId: null,
-                shortCode,
-                createdAt: new Date()
-            }).returning();
-        }
+        const shortCode = generateShortCode();        
+        const shortlinkResult = await queries.createShortlink(originalUrl, shortCode, locals.user?.id);
+
         return json({
             success: true,
-            shortCode: result[0].shortCode,
-            originalUrl: result[0].originalUrl,
-            shortUrl: `${new URL(request.url).origin}/${result[0].shortCode}`
+            shortCode: shortlinkResult.shortCode,
+            originalUrl: shortlinkResult.originalUrl,
+            shortUrl: `${new URL(request.url).origin}/${shortlinkResult.shortCode}`
         });
     } catch (error) {
         console.error('Error shortening URL:', error);

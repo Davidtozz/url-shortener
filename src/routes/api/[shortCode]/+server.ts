@@ -2,6 +2,7 @@ import * as table from '$lib/server/db/schema';
 import { error, type RequestHandler, text } from '@sveltejs/kit';
 import { db } from '$lib/server/db/index';
 import { eq } from 'drizzle-orm';
+import * as queries from '$lib/server/db/queries';
 
 export const DELETE: RequestHandler = async ({ locals, params }) => {
     const shortCode = params.shortCode;
@@ -13,11 +14,8 @@ export const DELETE: RequestHandler = async ({ locals, params }) => {
     }
 
     try {
-        const result = await db
-            .delete(table.url)
-            .where(eq(table.url.shortCode, shortCode))
-            .returning();
-        if (result.length > 0) {
+        const deleted = await queries.deleteShortlink(shortCode);
+        if (deleted) {
             return text('URL deleted successfully');
         }
         return error(404, 'URL not found');
