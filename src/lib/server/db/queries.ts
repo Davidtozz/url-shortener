@@ -24,6 +24,15 @@ export async function createShortlink(originalUrl: string, shortCode: string, us
     return result;
 }
 
+export async function checkIfShortCodeExists(shortCode: string) {
+    const [existing] = await db
+        .select()
+        .from(table.url)
+        .where(eq(table.url.shortCode, shortCode))
+        .limit(1);
+    return existing || false;
+}
+
 export async function deleteShortlink(shortCode: string) {
     const [result] = await db
         .delete(table.url)

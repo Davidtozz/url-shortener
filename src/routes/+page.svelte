@@ -12,11 +12,8 @@
   let loading = $state(false);
   let error = $state("");
   let success = $state(false);
-  let baseUrl = $derived.by(() => {
-    if (browser) {
-      return window.location.origin + "/";
-    }
-  });
+  let customCode = $state<string>("");
+
 
   interface Props {
     form: ActionData;
@@ -33,10 +30,13 @@
     loading = true;
 
     try {
+      const payload: Record<string, unknown> = { originalUrl };
+      if (customCode) payload.code = customCode;
+
       const shortlinkResponse = await fetch("/api/shorten", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ originalUrl }),
+        body: JSON.stringify(payload),
       });
 
       const shortlink = await shortlinkResponse.json();
@@ -51,6 +51,7 @@
       shortUrl = shortlink.shortUrl;
       success = true;
       originalUrl = "";
+      customCode = "";
     } catch (err) {
       error = "An error occurred while shortening the URL";
       console.error(err);
@@ -106,6 +107,23 @@
         />
       </div>
 
+      {#if isLoggedIn}
+        <div>
+          <label for="custom-code" class="block text-sm font-medium text-gray-700 mb-2">
+            Custom code (optional)
+          </label>
+          <input
+            id="custom-code"
+            type="text"
+            placeholder="e.g. my-link"
+            bind:value={customCode}
+            onkeydown={handleKeyDown}
+            disabled={loading}
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+          />
+        </div>
+      {/if}
+
       {#if error}
         <div
           class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
@@ -123,7 +141,7 @@
             <code 
               data-testid="short-url"
             class="flex-1 bg-green-50 px-2 py-1 rounded break-all"
-              >{shortUrl}</code
+            >{customCode || shortUrl}</code
             >
             <button
               onclick={copyToClipboard}

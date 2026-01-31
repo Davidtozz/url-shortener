@@ -11,7 +11,7 @@ function generateShortCode(): string {
 }
 
 export const POST: RequestHandler = async ({ request, locals }) => {
-    const { originalUrl } = await request.json();
+    const { originalUrl, code } = await request.json();
     
     if (!originalUrl) {
         return json(
@@ -42,8 +42,22 @@ export const POST: RequestHandler = async ({ request, locals }) => {
             });
         }
 
-        // Generate a short code
-        const shortCode = generateShortCode();        
+        let shortCode: string;
+
+        if (code) {
+            if (!locals.user) {
+                return json({ error: 'Authentication required to set custom code' }, { status: 401 });
+            }
+
+            const existingCode = await queries.checkIfShortCodeExists(code);
+            if (existingCode) {
+                return json({ error: 'Short code already in use' }, { status: 409 });
+            }
+            shortCode = code;
+        } else {
+            shortCode = generateShortCode();
+        }
+
         const shortlinkResult = await queries.createShortlink(originalUrl, shortCode, locals.user?.id);
 
         return json({
