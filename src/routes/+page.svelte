@@ -5,13 +5,18 @@
   import { enhance } from "$app/forms";
   import type { ActionData, PageData, PageServerData } from "./$types";
   import {type URL as Shortlink} from '$lib/server/db/schema'; 
+  import { browser } from '$app/environment';
 
   let originalUrl = $state("");
   let shortUrl = $state("");
-  const shortCode = $derived.by(() => shortUrl.split("/").pop() || "");
   let loading = $state(false);
   let error = $state("");
   let success = $state(false);
+  let baseUrl = $derived.by(() => {
+    if (browser) {
+      return window.location.origin + "/";
+    }
+  });
 
   interface Props {
     form: ActionData;
@@ -54,13 +59,13 @@
     }
   }
 
-  async function deleteShortlink() {
-    const response = await fetch(`/api/${shortCode}`, {
+  async function deleteShortlink(code: string) {
+    const response = await fetch(`/api/${code}`, {
       method: "DELETE",
     });
 
     if(response.ok) {
-      userShortlinks = userShortlinks.filter(link => link.shortCode !== shortCode);
+      userShortlinks = userShortlinks.filter(link => link.shortCode !== code);
       shortUrl = "";
     } else {
       alert("Failed to delete shortlink :(");
@@ -200,11 +205,12 @@
         Recently Shortened URLs
       </h2>
 
-      <table>
+      <table class="table-auto w-full border-collapse">
         <thead>
           <tr>
-            <th class="text-left pr-4 py-2 border-b">Original URL</th>
-            <th class="text-left py-2 border-b">Short URL</th>
+            <th class="text-left py-2 border-b">Original URL</th>
+            <th class="text-left py-2 border-b">Short Code</th>
+            <th class="text-left py-2 border-b">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -213,9 +219,12 @@
           data-testid={shortlink.shortCode}
           >
             <td class="pr-4 py-2 border-b">
-              <code class="bg-gray-100 px-2 py-1 rounded break-all"
-                  >{shortlink.originalUrl}</code
+              <span title="{shortlink.originalUrl}">
+
+                <code class="bg-gray-100 px-2 py-1 rounded break-all line-clamp-1"
+                >{shortlink.originalUrl}</code
                 >
+              </span>
               </td>
               <td class="py-2 border-b">
                 <a
@@ -227,7 +236,7 @@
               <td>
                 <button 
                 data-testid="button-delete"
-                onclick={deleteShortlink}
+                onclick={() => deleteShortlink(shortlink.shortCode)}
                 class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
                   Delete
                 </button>
@@ -239,16 +248,7 @@
     </div>
     
     </div>
-    
-    <a href="https://github.com/Davidtozz" target="_blank">
-      <section class="flex bg-white rounded-lg shadow-md p-4 mt-6 items-center gap-3">
-        <Github />
-        <p>
-          Davidtozz
-        </p>
-      </section>
-    </a>
-    </main>
+</main>
   
 <style>
   :global(body) {
