@@ -228,7 +228,9 @@
           <tr>
             <th class="text-left py-2 border-b">Original URL</th>
             <th class="text-left py-2 border-b">Short Code</th>
+            {#if isLoggedIn}
             <th class="text-left py-2 border-b">Actions</th>
+            {/if}
           </tr>
         </thead>
         <tbody>
@@ -252,12 +254,14 @@
                 >
               </td>
               <td>
+                {#if isLoggedIn}
                 <button 
                 data-testid="button-delete"
                 onclick={() => deleteShortlink(shortlink.shortCode)}
                 class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
                   Delete
                 </button>
+                {/if}
               </td>
             </tr>
             {/each}

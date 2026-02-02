@@ -9,7 +9,21 @@ test.describe("API Operations as Guest", () => {
 
     test('Guest cannot delete a short URL', async ({ request }) => {
         const response = await request.delete(apiBase + '/randomcode');
-        expect(response.status()).toBe(401);
+        await expect(response.status()).toBe(401);
+    });
+    
+    test('Guest cannot see the delete button for a short URL in the table', async ({ page }) => {
+        await page.getByTestId('url-input').fill('https://example.com/guest-delete');
+        const response = page.waitForResponse(response => {
+            return response.url().endsWith('/api/shorten') 
+                && response.request().method() === 'POST'
+        })
+
+        await page.getByTestId('shorten-button').click();
+        await response;
+
+        await expect(page.getByTestId('short-url')).toBeVisible();
+        await expect(page.getByTestId('button-delete')).not.toBeVisible();        
     });
 
     test('Guest cannot create a short URL with a custom code', async ({ request }) => {
