@@ -5,6 +5,9 @@ RUN npm i
 # container won't build if we dont set vite cache directory permissions
 RUN mkdir -p node_modules/.vite && chmod -R 777 node_modules/.vite
 COPY . .
+ARG DATABASE_URL
+ARG ORIGIN
+ENV DATABASE_URL=$DATABASE_URL
 RUN npm run build
 RUN npm prune --production
 
@@ -16,4 +19,5 @@ COPY --from=builder /app/node_modules node_modules/
 COPY package.json .
 EXPOSE 3000 
 ENV PORT=3000
+ENV ORIGIN=$ORIGIN
 CMD ["node", "build"]

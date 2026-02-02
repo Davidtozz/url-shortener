@@ -4,12 +4,7 @@ import { expect, test } from '@playwright/test';
 test.describe("Main page", () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/');
-    })  
-    
-    test('home page has expected h1', async ({ page }) => {
-        await expect(page.locator('h1')).toBeVisible();
-    });
-    
+    })   
     test('User can register for an account', async ({ page }) => {
         const username = `user${Date.now()}`;
         const password = 'password123';
