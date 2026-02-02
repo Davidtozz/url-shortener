@@ -84,7 +84,7 @@
 </script>
 
 <main class="min-h-screen bg-white flex flex-col items-center justify-center p-4 doodles  gap-5">
-  <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
+  <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-xl">
     <h1 class="text-3xl font-bold text-gray-800 mb-2 text-center">
       URL Shortener
     </h1>
